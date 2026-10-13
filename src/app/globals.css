@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root,
+  .dark {
+    /* Surface Layers (L0 to L4 Elevation) */
+    --bg-canvas: 240 10% 3.9%;
+    --surface-layout: 240 10% 5.5%;
+    --surface-card: 240 8% 8.5%;
+    --surface-hover: 240 6% 12.5%;
+    --surface-overlay: 240 7% 10.5%;
+
+    /* Hairline Borders */
+    --border-default: 240 3.7% 15.9%;
+    --border-subtle: 240 4% 11%;
+    --border-hover: 240 4% 24%;
+
+    /* Typography Hierarchy */
+    --foreground: 240 4.8% 95.9%;
+    --foreground-muted: 240 5% 64.9%;
+    --foreground-subtle: 240 3.8% 46.1%;
+    --foreground-disabled: 240 5% 26%;
+
+    /* Desaturated Semantic Dark Tokens */
+    --semantic-blue: 217 91% 60%;
+    --semantic-emerald: 142 60% 48%;
+    --semantic-rose: 0 80% 65%;
+    --semantic-amber: 38 92% 50%;
+  }
+
+  body {
+    background-color: hsl(var(--bg-canvas));
+    color: hsl(var(--foreground));
+    color-scheme: dark;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-default));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border-hover));
+}
