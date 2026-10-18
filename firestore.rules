@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasValidOwnershipOnCreate() {
+      return isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+
+    function isExistingOwner() {
+      return isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    function isImmutableOwner() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    // 1. User Root & Private Integrations (Google OAuth tokens)
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /integrations/{integrationId} {
+        // Only server-side Firebase Admin SDK should read/write refresh tokens
+        allow read, write: if false;
+      }
+    }
+
+    // 2. Projects Collection
+    match /projects/{projectId} {
+      allow read: if isExistingOwner();
+      allow create: if hasValidOwnershipOnCreate();
+      allow update: if isExistingOwner() && isImmutableOwner();
+      allow delete: if isExistingOwner();
+    }
+
+    // 3. Boards Collection (scoped by projectId)
+    match /boards/{boardId} {
+      allow read: if isExistingOwner();
+      allow create: if hasValidOwnershipOnCreate() && request.resource.data.projectId is string;
+      allow update: if isExistingOwner() && isImmutableOwner() && request.resource.data.projectId == resource.data.projectId;
+      allow delete: if isExistingOwner();
+    }
+
+    // 4. Tasks Collection (scoped by projectId)
+    match /tasks/{taskId} {
+      allow read: if isExistingOwner();
+      allow create: if hasValidOwnershipOnCreate() && request.resource.data.projectId is string;
+      allow update: if isExistingOwner() && isImmutableOwner() && request.resource.data.projectId == resource.data.projectId;
+      allow delete: if isExistingOwner();
+    }
+  }
+}
