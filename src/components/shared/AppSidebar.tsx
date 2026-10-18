@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Kanban, Palette, CheckSquare, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AppSidebarProps {
@@ -16,22 +17,22 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
     {
       label: "Kanban Board",
       href: `/projects/${projectId}/boards`,
-      icon: "📋",
+      icon: Kanban,
     },
     {
       label: "Canvas Whiteboard",
       href: `/projects/${projectId}/canvas`,
-      icon: "🎨",
+      icon: Palette,
     },
     {
       label: "Task List",
       href: `/projects/${projectId}/tasks`,
-      icon: "✓",
+      icon: CheckSquare,
     },
     {
       label: "Project Settings",
       href: `/projects/${projectId}/settings`,
-      icon: "⚙️",
+      icon: Settings,
     },
   ];
 
@@ -44,6 +45,7 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
 
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
@@ -55,7 +57,7 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
                   : "text-muted-foreground hover:bg-surface-hover hover:text-foreground"
               )}
             >
-              <span className="text-sm">{item.icon}</span>
+              <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
               <span>{item.label}</span>
             </Link>
           );

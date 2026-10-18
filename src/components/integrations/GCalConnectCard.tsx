@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Calendar } from "lucide-react";
 
 interface GCalConnectCardProps {
   isConnected: boolean;
@@ -16,8 +17,8 @@ export function GCalConnectCard({
   return (
     <div className="p-4 rounded-md border border-border bg-surface-card flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded bg-surface-elevated border border-border flex items-center justify-center text-sm">
-          📅
+        <div className="w-8 h-8 rounded bg-surface-elevated border border-border flex items-center justify-center text-muted-foreground">
+          <Calendar className="w-4 h-4 text-primary" />
         </div>
         <div>
           <h4 className="text-xs font-medium text-foreground">

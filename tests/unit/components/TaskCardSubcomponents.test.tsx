@@ -15,6 +15,6 @@ describe("TaskCardHeader", () => {
 describe("TaskCardMeta", () => {
   it("renders attachment badge count when > 0", () => {
     render(<TaskCardMeta dueDate={null} attachmentCount={3} hasGCal={false} />);
-    expect(screen.getByText("📎 3")).toBeDefined();
+    expect(screen.getByText("3")).toBeDefined();
   });
 });

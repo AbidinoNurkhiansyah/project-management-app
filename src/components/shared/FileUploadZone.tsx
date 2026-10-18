@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { UploadCloud } from "lucide-react";
 import { FileAttachment } from "@/types/common";
 import { getPresignedUploadUrlAction } from "@/actions/storage.actions";
 import { getFirebaseAuth } from "@/lib/firebase/client";
@@ -70,7 +71,8 @@ export function FileUploadZone({
         disabled={uploading}
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
       />
-      <div className="text-xs text-muted-foreground">
+      <div className="text-xs text-muted-foreground flex flex-col items-center justify-center">
+        <UploadCloud className="w-5 h-5 mb-1.5 text-muted-foreground" />
         {uploading ? (
           <span className="text-foreground animate-pulse">
             Uploading to R2...

@@ -1,5 +1,6 @@
 import React from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
+import { CheckSquare } from "lucide-react";
 
 export function TaskNode({ data, selected }: NodeProps) {
   const title = (data?.title as string) || "Untitled Task";
@@ -17,7 +18,8 @@ export function TaskNode({ data, selected }: NodeProps) {
         className="!w-2 !h-2 !bg-zinc-500"
       />
       <div className="flex items-center justify-between gap-1 mb-1">
-        <span className="text-[10px] font-mono text-muted-foreground uppercase">
+        <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground uppercase">
+          <CheckSquare className="w-3 h-3 text-blue-400" />
           Task
         </span>
         <span className="text-[9px] font-mono px-1 rounded bg-surface-elevated text-zinc-300">
