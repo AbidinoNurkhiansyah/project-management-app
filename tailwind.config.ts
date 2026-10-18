@@ -53,12 +53,12 @@ const config: Config = {
         sm: "4px",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "Inter", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        sans: ["var(--font-geist-sans)", "var(--font-sans)", "Inter", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "var(--font-mono)", "monospace"],
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
 
 export default config;
