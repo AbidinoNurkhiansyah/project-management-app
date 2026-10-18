@@ -1,40 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { CanvasBoard } from "@/components/canvas/CanvasBoard";
-import { BoardCanvasData } from "@/types/boards";
-
-const INITIAL_CANVAS_DATA: BoardCanvasData = {
-  nodes: [
-    {
-      id: "node-1",
-      type: "taskNode",
-      position: { x: 200, y: 150 },
-      data: { title: "Architecture & Data Contracts", priority: "HIGH" },
-    },
-    {
-      id: "node-2",
-      type: "noteNode",
-      position: { x: 480, y: 150 },
-      data: { text: "Remember: Direct PUT upload to Cloudflare R2 avoids egress fees." },
-    },
-  ],
-  edges: [
-    {
-      id: "edge-1",
-      source: "node-1",
-      target: "node-2",
-    },
-  ],
-  viewport: { x: 0, y: 0, zoom: 1 },
-};
+import { useCanvas } from "@/hooks/useCanvas";
 
 export default function CanvasPage({ params }: { params: { projectId: string } }) {
-  const [canvasData, setCanvasData] = useState<BoardCanvasData | null>(INITIAL_CANVAS_DATA);
-
-  const handleSave = (data: BoardCanvasData) => {
-    setCanvasData(data);
-  };
+  const { canvasData, loading, saveStatus, saveCanvas } = useCanvas(params.projectId);
 
   return (
     <div className="flex flex-col h-[calc(100vh-48px)] overflow-hidden">
@@ -45,13 +16,28 @@ export default function CanvasPage({ params }: { params: { projectId: string } }
             React Flow v12 • 800 KB Payload Safeguard
           </p>
         </div>
-        <div className="text-[11px] text-muted-foreground font-mono">
-          Auto-saved
+        <div className="text-[11px] font-mono text-muted-foreground flex items-center gap-2">
+          {saveStatus === "saving" && (
+            <span className="text-amber-400">Saving...</span>
+          )}
+          {saveStatus === "saved" && (
+            <span className="text-emerald-400">Saved to Firestore</span>
+          )}
+          {saveStatus === "error" && (
+            <span className="text-rose-400">Payload Limit / Error</span>
+          )}
+          {saveStatus === "idle" && <span>Auto-saved</span>}
         </div>
       </div>
 
       <div className="flex-1 relative">
-        <CanvasBoard initialData={canvasData} onSave={handleSave} />
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+            Loading canvas whiteboard...
+          </div>
+        ) : (
+          <CanvasBoard initialData={canvasData} onSave={saveCanvas} />
+        )}
       </div>
     </div>
   );

@@ -15,5 +15,5 @@ export const TaskCreateInputSchema = z.object({
 
 export const TaskUpdateInputSchema = TaskCreateInputSchema.partial();
 
-export type TaskCreateInput = z.infer<typeof TaskCreateInputSchema>;
-export type TaskUpdateInput = z.infer<typeof TaskUpdateInputSchema>;
+export type TaskCreateInput = z.input<typeof TaskCreateInputSchema>;
+export type TaskUpdateInput = z.input<typeof TaskUpdateInputSchema>;

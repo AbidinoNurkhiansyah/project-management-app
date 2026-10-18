@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Dialog, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Dialog, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { TaskCreateInputSchema } from "@/schemas/task.schema";
 import { TaskPriority } from "@/types/tasks";
 

@@ -1,19 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GCalConnectCard } from "@/components/integrations/GCalConnectCard";
 import { FileUploadZone } from "@/components/shared/FileUploadZone";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { useProjects } from "@/hooks/useProjects";
 
 export default function ProjectSettingsPage({ params }: { params: { projectId: string } }) {
   const router = useRouter();
-  const [isGCalConnected, setIsGCalConnected] = useState(false);
+  const searchParams = useSearchParams();
+  const gcalParam = searchParams.get("gcal");
+  const gcalError = searchParams.get("gcal_error");
+
+  const { deleteProject } = useProjects();
+  const [isGCalConnected, setIsGCalConnected] = useState(gcalParam === "connected");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleConnectCalendar = () => {
-    // In production, redirects to Google OAuth flow
-    setIsGCalConnected(true);
+    window.location.href = `/api/auth/google/url?projectId=${params.projectId}`;
   };
 
   const handleDisconnectCalendar = () => {
@@ -21,13 +27,16 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
   };
 
   const handleDeleteProject = async () => {
-    if (!window.confirm("Are you sure? This will purge all Cloudflare R2 files and tasks.")) {
+    if (!window.confirm("Are you sure? This will permanently purge all Cloudflare R2 files and tasks.")) {
       return;
     }
     try {
       setIsDeleting(true);
-      // Calls deleteProjectCascadeAction
+      setActionError(null);
+      await deleteProject(params.projectId);
       router.push("/projects");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to delete project");
     } finally {
       setIsDeleting(false);
     }
@@ -41,6 +50,24 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
           Manage integrations, object storage attachments, and project lifecycles.
         </p>
       </div>
+
+      {actionError && (
+        <div className="p-3 rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs">
+          {actionError}
+        </div>
+      )}
+
+      {gcalParam === "connected" && (
+        <div className="p-3 rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs flex items-center gap-2">
+          <span>✓</span> Google Calendar connected successfully! Deadlines will automatically sync.
+        </div>
+      )}
+
+      {gcalError && (
+        <div className="p-3 rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs flex items-center gap-2">
+          <span>✕</span> Failed to connect Google Calendar: {gcalError}
+        </div>
+      )}
 
       <div className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

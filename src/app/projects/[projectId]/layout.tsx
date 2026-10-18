@@ -1,33 +1,10 @@
-import React from "react";
-import { AppShell } from "@/components/shared/AppShell";
-import { ProjectDoc } from "@/types/projects";
+"use client";
 
-const SAMPLE_PROJECTS: ProjectDoc[] = [
-  {
-    id: "proj-1",
-    userId: "user-1",
-    name: "Core Platform V2",
-    description: "Cloudflare R2 zero-egress object storage & project workspace",
-    slug: "core-platform-v2",
-    color: "#3b82f6",
-    icon: "layout",
-    isArchived: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "proj-2",
-    userId: "user-1",
-    name: "Mobile App MVP",
-    description: "React Native client with offline-first synchronization",
-    slug: "mobile-app-mvp",
-    color: "#10b981",
-    icon: "smartphone",
-    isArchived: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import React, { useEffect } from "react";
+import { AppShell } from "@/components/shared/AppShell";
+import { AuthGuard } from "@/components/shared/AuthGuard";
+import { useProjects } from "@/hooks/useProjects";
+import { useProjectStore } from "@/store/useProjectStore";
 
 export default function ProjectScopedLayout({
   children,
@@ -36,9 +13,21 @@ export default function ProjectScopedLayout({
   children: React.ReactNode;
   params: { projectId: string };
 }) {
+  const { projects } = useProjects();
+  const { setActiveProjectId, addRecentProject } = useProjectStore();
+
+  useEffect(() => {
+    if (params.projectId) {
+      setActiveProjectId(params.projectId);
+      addRecentProject(params.projectId);
+    }
+  }, [params.projectId, setActiveProjectId, addRecentProject]);
+
   return (
-    <AppShell projects={SAMPLE_PROJECTS} activeProjectId={params.projectId}>
-      {children}
-    </AppShell>
+    <AuthGuard>
+      <AppShell projects={projects} activeProjectId={params.projectId}>
+        {children}
+      </AppShell>
+    </AuthGuard>
   );
 }

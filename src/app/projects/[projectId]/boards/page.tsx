@@ -3,70 +3,17 @@
 import React, { useState } from "react";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { TaskCreateDialog } from "@/components/kanban/TaskCreateDialog";
-import { Button } from "@/components/ui/Button";
-import { TaskDoc, TaskPriority } from "@/types/tasks";
-
-const INITIAL_TASKS: TaskDoc[] = [
-  {
-    id: "task-1",
-    userId: "user-1",
-    projectId: "proj-1",
-    boardId: null,
-    columnId: "TODO",
-    order: 1000,
-    title: "Configure Cloudflare R2 bucket CORS",
-    description: "Allow client-direct PUT uploads without zero egress fees",
-    dueDate: new Date(Date.now() + 86400000 * 2).toISOString(),
-    priority: "HIGH",
-    gcalEventId: null,
-    attachments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "task-2",
-    userId: "user-1",
-    projectId: "proj-1",
-    boardId: null,
-    columnId: "IN_PROGRESS",
-    order: 2000,
-    title: "Implement AES-256-GCM token cipher",
-    description: "Secure OAuth tokens for Google Calendar integration",
-    dueDate: new Date(Date.now() + 86400000).toISOString(),
-    priority: "URGENT",
-    gcalEventId: "gcal-123",
-    attachments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "task-3",
-    userId: "user-1",
-    projectId: "proj-1",
-    boardId: null,
-    columnId: "DONE",
-    order: 3000,
-    title: "Setup Vitest and Tailwind utility",
-    description: "Verify cn helper with twMerge and clsx",
-    dueDate: null,
-    priority: "MEDIUM",
-    gcalEventId: null,
-    attachments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TaskPriority } from "@/types/tasks";
+import { useTasks } from "@/hooks/useTasks";
 
 export default function KanbanPage({ params }: { params: { projectId: string } }) {
-  const [tasks, setTasks] = useState<TaskDoc[]>(INITIAL_TASKS);
+  const { tasks, loading, moveTask, createTask } = useTasks(params.projectId);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const handleTaskReorder = (taskId: string, targetColumn: string, newOrder: number) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId ? { ...t, columnId: targetColumn, order: newOrder } : t
-      )
-    );
+  const handleTaskReorder = async (taskId: string, targetColumn: string, newOrder: number) => {
+    await moveTask(taskId, targetColumn, newOrder);
   };
 
   const handleCreateTask = async (task: {
@@ -77,23 +24,14 @@ export default function KanbanPage({ params }: { params: { projectId: string } }
     dueDate?: string | null;
     columnId: string;
   }) => {
-    const newTask: TaskDoc = {
-      id: `task-${Date.now()}`,
-      userId: "user-1",
+    await createTask({
       projectId: params.projectId,
-      boardId: null,
-      columnId: task.columnId,
-      order: Date.now(),
       title: task.title,
       description: task.description || null,
-      dueDate: task.dueDate || null,
       priority: task.priority,
-      gcalEventId: null,
-      attachments: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setTasks((prev) => [newTask, ...prev]);
+      dueDate: task.dueDate || null,
+      columnId: task.columnId,
+    });
   };
 
   return (
@@ -106,16 +44,28 @@ export default function KanbanPage({ params }: { params: { projectId: string } }
           </p>
         </div>
         <Button onClick={() => setIsCreateOpen(true)} className="gap-1.5">
-          <span>+</span> Add Task
+          <Plus className="w-3.5 h-3.5 shrink-0" />
+          <span>Add Task</span>
         </Button>
       </div>
 
       <div className="flex-1 overflow-x-auto">
-        <KanbanBoard
-          tasks={tasks}
-          onTaskReorder={handleTaskReorder}
-          onTaskEdit={() => {}}
-        />
+        {loading ? (
+          <div className="flex gap-4">
+            {[1, 2, 3].map((col) => (
+              <div
+                key={col}
+                className="w-72 h-96 rounded-lg border border-border bg-surface-card animate-pulse"
+              />
+            ))}
+          </div>
+        ) : (
+          <KanbanBoard
+            tasks={tasks}
+            onTaskReorder={handleTaskReorder}
+            onTaskEdit={() => {}}
+          />
+        )}
       </div>
 
       <TaskCreateDialog
