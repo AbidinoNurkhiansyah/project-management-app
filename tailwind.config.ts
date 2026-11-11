@@ -53,7 +53,7 @@ const config: Config = {
         sm: "4px",
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "var(--font-sans)", "Inter", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
         mono: ["var(--font-geist-mono)", "var(--font-mono)", "monospace"],
       },
     },

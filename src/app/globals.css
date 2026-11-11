@@ -34,7 +34,10 @@
     background-color: hsl(var(--bg-canvas));
     color: hsl(var(--foreground));
     color-scheme: dark;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "calt" 1, "rlig" 1;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
