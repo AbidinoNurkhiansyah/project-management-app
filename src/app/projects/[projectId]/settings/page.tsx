@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GCalConnectCard } from "@/components/integrations/GCalConnectCard";
 import { FileUploadZone } from "@/components/shared/FileUploadZone";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { useProjects } from "@/hooks/useProjects";
 
@@ -16,6 +17,8 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
   const { deleteProject } = useProjects();
   const [isGCalConnected, setIsGCalConnected] = useState(gcalParam === "connected");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const handleConnectCalendar = () => {
@@ -26,10 +29,7 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
     setIsGCalConnected(false);
   };
 
-  const handleDeleteProject = async () => {
-    if (!window.confirm("Are you sure? This will permanently purge all Cloudflare R2 files and tasks.")) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
     try {
       setIsDeleting(true);
       setActionError(null);
@@ -37,7 +37,6 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
       router.push("/projects");
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to delete project");
-    } finally {
       setIsDeleting(false);
     }
   };
@@ -54,6 +53,19 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
       {actionError && (
         <div className="p-3 rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs">
           {actionError}
+        </div>
+      )}
+
+      {uploadSuccess && (
+        <div className="p-3 rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs flex items-center justify-between">
+          <span>✓ File uploaded successfully: {uploadSuccess}</span>
+          <button
+            type="button"
+            onClick={() => setUploadSuccess(null)}
+            className="text-muted-foreground hover:text-foreground text-xs"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -87,7 +99,7 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
         <FileUploadZone
           projectId={params.projectId}
           onUploadComplete={(att) => {
-            alert(`File uploaded: ${att.fileName}`);
+            setUploadSuccess(att.fileName);
           }}
         />
       </div>
@@ -106,13 +118,24 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
           <Button
             variant="destructive"
             size="sm"
-            onClick={handleDeleteProject}
+            onClick={() => setIsConfirmDeleteOpen(true)}
             disabled={isDeleting}
           >
             {isDeleting ? "Purging..." : "Delete Project"}
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Cascade Delete Project"
+        description="Are you sure you want to delete this project? This will permanently purge all tasks, boards, and Cloudflare R2 attachments. This action cannot be undone."
+        confirmLabel={isDeleting ? "Purging..." : "Delete Project"}
+        cancelLabel="Cancel"
+        isDestructive={true}
+      />
     </div>
   );
 }
