@@ -14,6 +14,11 @@ interface KanbanColumnProps {
   title: string;
   tasks: TaskDoc[];
   onTaskEdit: (task: TaskDoc) => void;
+  onDeleteTask?: (taskId: string) => void;
+  onToggleSubtask?: (taskId: string, subtaskId: string) => void;
+  onAddSubtask?: (taskId: string, title: string) => void;
+  expandedTaskId?: string | null;
+  onToggleExpand?: (taskId: string) => void;
 }
 
 export function KanbanColumn({
@@ -21,6 +26,11 @@ export function KanbanColumn({
   title,
   tasks,
   onTaskEdit,
+  onDeleteTask,
+  onToggleSubtask,
+  onAddSubtask,
+  expandedTaskId,
+  onToggleExpand,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: columnId });
 
@@ -46,7 +56,16 @@ export function KanbanColumn({
       >
         <div className="flex flex-col gap-2 min-h-[120px] overflow-y-auto">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onEdit={onTaskEdit} />
+            <TaskCard
+              key={task.id}
+              task={task}
+              onEdit={onTaskEdit}
+              onDelete={onDeleteTask}
+              onToggleSubtask={onToggleSubtask}
+              onAddSubtask={onAddSubtask}
+              isExpanded={expandedTaskId === task.id}
+              onToggleExpand={onToggleExpand ? () => onToggleExpand(task.id) : undefined}
+            />
           ))}
         </div>
       </SortableContext>

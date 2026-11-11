@@ -18,6 +18,9 @@ interface KanbanBoardProps {
   tasks: TaskDoc[];
   onTaskReorder: (taskId: string, targetColumn: string, newOrder: number) => void;
   onTaskEdit: (task: TaskDoc) => void;
+  onDeleteTask?: (taskId: string) => void;
+  onToggleSubtask?: (taskId: string, subtaskId: string) => void;
+  onAddSubtask?: (taskId: string, title: string) => void;
 }
 
 const DEFAULT_COLUMNS = [
@@ -30,8 +33,12 @@ export function KanbanBoard({
   tasks,
   onTaskReorder,
   onTaskEdit,
+  onDeleteTask,
+  onToggleSubtask,
+  onAddSubtask,
 }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<TaskDoc | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
@@ -71,11 +78,23 @@ export function KanbanBoard({
               .filter((t) => t.columnId === col.id)
               .sort((a, b) => a.order - b.order)}
             onTaskEdit={onTaskEdit}
+            onDeleteTask={onDeleteTask}
+            onToggleSubtask={onToggleSubtask}
+            onAddSubtask={onAddSubtask}
+            expandedTaskId={expandedTaskId}
+            onToggleExpand={(id) => setExpandedTaskId((prev) => (prev === id ? null : id))}
           />
         ))}
       </div>
       <DragOverlay>
-        {activeTask ? <TaskCard task={activeTask} onEdit={() => {}} /> : null}
+        {activeTask ? (
+          <TaskCard
+            task={activeTask}
+            onEdit={() => {}}
+            onToggleSubtask={onToggleSubtask}
+            onAddSubtask={onAddSubtask}
+          />
+        ) : null}
       </DragOverlay>
     </DndContext>
   );

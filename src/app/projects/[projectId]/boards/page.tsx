@@ -3,14 +3,31 @@
 import React, { useState } from "react";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { TaskCreateDialog } from "@/components/kanban/TaskCreateDialog";
+import { TaskDetailDialog } from "@/components/kanban/TaskDetailDialog";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TaskPriority } from "@/types/tasks";
+import { TaskPriority, TaskDoc } from "@/types/tasks";
 import { useTasks } from "@/hooks/useTasks";
 
 export default function KanbanPage({ params }: { params: { projectId: string } }) {
-  const { tasks, loading, moveTask, createTask } = useTasks(params.projectId);
+  const {
+    tasks,
+    loading,
+    moveTask,
+    createTask,
+    updateTask,
+    deleteTask,
+    addSubtask,
+    toggleSubtask,
+    removeSubtask,
+  } = useTasks(params.projectId);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskDoc | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<{ id: string; title: string } | null>(null);
+
+  const activeSelectedTask = tasks.find((t) => t.id === selectedTask?.id) || selectedTask;
 
   const handleTaskReorder = async (taskId: string, targetColumn: string, newOrder: number) => {
     await moveTask(taskId, targetColumn, newOrder);
@@ -63,7 +80,18 @@ export default function KanbanPage({ params }: { params: { projectId: string } }
           <KanbanBoard
             tasks={tasks}
             onTaskReorder={handleTaskReorder}
-            onTaskEdit={() => {}}
+            onTaskEdit={(task) => {
+              setSelectedTask(task);
+              setIsDetailOpen(true);
+            }}
+            onDeleteTask={(taskId) => {
+              const target = tasks.find((t) => t.id === taskId);
+              if (target) {
+                setTaskToDelete({ id: target.id, title: target.title });
+              }
+            }}
+            onToggleSubtask={toggleSubtask}
+            onAddSubtask={addSubtask}
           />
         )}
       </div>
@@ -73,6 +101,29 @@ export default function KanbanPage({ params }: { params: { projectId: string } }
         onClose={() => setIsCreateOpen(false)}
         projectId={params.projectId}
         onCreate={handleCreateTask}
+      />
+
+      <TaskDetailDialog
+        task={activeSelectedTask}
+        isOpen={isDetailOpen}
+        onClose={() => {
+          setIsDetailOpen(false);
+          setSelectedTask(null);
+        }}
+        onUpdate={updateTask}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(taskToDelete)}
+        onClose={() => setTaskToDelete(null)}
+        onConfirm={() => {
+          if (taskToDelete) {
+            deleteTask(taskToDelete.id);
+          }
+        }}
+        title="Delete Task"
+        description={`Are you sure you want to delete task "${taskToDelete?.title}"? All associated subtasks will also be permanently removed.`}
+        confirmLabel="Delete Task"
       />
     </div>
   );
