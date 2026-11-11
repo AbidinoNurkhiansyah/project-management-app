@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { ProjectSwitcher } from "@/components/shared/ProjectSwitcher";
 
 const mockProjects = [
@@ -41,5 +41,23 @@ describe("ProjectSwitcher", () => {
       />
     );
     expect(screen.getByText("Alpha Project")).toBeDefined();
+  });
+
+  it("opens dropdown and shows All Projects and Create New Project options", () => {
+    render(
+      <ProjectSwitcher
+        projects={mockProjects}
+        activeProjectId="p1"
+        onSelectProject={vi.fn()}
+        onCreateClick={vi.fn()}
+      />
+    );
+
+    const trigger = screen.getByRole("button", { name: /alpha project/i });
+    fireEvent.click(trigger);
+
+    expect(screen.getByText("All Projects")).toBeDefined();
+    expect(screen.getByText("Create New Project")).toBeDefined();
+    expect(screen.getByText("Beta Project")).toBeDefined();
   });
 });

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, Plus, Check } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, Plus, Check, LayoutGrid } from "lucide-react";
 import { ProjectDoc } from "@/types/projects";
 
 interface ProjectSwitcherProps {
@@ -61,13 +62,21 @@ export function ProjectSwitcher({
               )}
             </button>
           ))}
-          <div className="border-t border-border mt-1 pt-1">
+          <div className="border-t border-border mt-1 pt-1 space-y-0.5">
+            <Link
+              href="/projects"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 text-left text-muted-foreground hover:text-foreground hover:bg-surface-hover rounded"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
+              <span>All Projects</span>
+            </Link>
             <button
               onClick={() => {
                 onCreateClick();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-2 w-full px-2.5 py-1.5 text-left text-muted-foreground hover:text-foreground hover:bg-surface-hover"
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 text-left text-muted-foreground hover:text-foreground hover:bg-surface-hover rounded"
             >
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Create New Project</span>

@@ -1,9 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import { Search, LogOut, Folder } from "lucide-react";
 import { ProjectDoc } from "@/types/projects";
+import { ProjectProgressStats } from "@/hooks/useProjectsProgress";
 import { ProjectSwitcher } from "./ProjectSwitcher";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "@/components/ui/button";
 
 interface TopNavProps {
@@ -14,6 +17,7 @@ interface TopNavProps {
   onOpenCommandMenu: () => void;
   userEmail?: string | null;
   onSignOut?: () => void;
+  projectProgress?: ProjectProgressStats;
 }
 
 export function TopNav({
@@ -24,27 +28,55 @@ export function TopNav({
   onOpenCommandMenu,
   userEmail,
   onSignOut,
+  projectProgress,
 }: TopNavProps) {
+  const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 flex h-12 w-full items-center justify-between border-b border-border bg-surface-layout/95 px-4 backdrop-blur">
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
+        <Link
+          href="/projects"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          title="Back to all projects"
+        >
           <div className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-zinc-300">
             <Folder className="w-3 h-3 text-zinc-300" />
           </div>
-          <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase hidden sm:inline">
+          <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase hover:text-foreground hidden sm:inline">
             Workspace
           </span>
-        </div>
+        </Link>
 
         <span className="text-border">/</span>
 
-        <ProjectSwitcher
-          projects={projects}
-          activeProjectId={activeProjectId}
-          onSelectProject={onSelectProject}
-          onCreateClick={onCreateProjectClick}
-        />
+        {activeProjectId ? (
+          <ProjectSwitcher
+            projects={projects}
+            activeProjectId={activeProjectId}
+            onSelectProject={onSelectProject}
+            onCreateClick={onCreateProjectClick}
+          />
+        ) : (
+          <span className="text-xs font-medium text-foreground">Projects</span>
+        )}
+
+        {projectProgress && activeProjectId && (
+          <div
+            title={`Project Progress: ${projectProgress.percentage}% (${projectProgress.completedTasks}/${projectProgress.totalTasks} completed)`}
+            className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-surface-card border border-border text-xs font-mono"
+          >
+            <div className="w-14 h-1.5 bg-surface-elevated rounded-full overflow-hidden border border-border/40">
+              <div
+                className="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                style={{ width: `${projectProgress.percentage}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-semibold text-foreground">
+              {projectProgress.percentage}%
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -71,7 +103,7 @@ export function TopNav({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onSignOut}
+                onClick={() => setIsSignOutConfirmOpen(true)}
                 className="h-7 px-2 text-xs text-muted-foreground hover:text-red-400 gap-1"
                 title="Sign out of workspace"
               >
@@ -82,6 +114,19 @@ export function TopNav({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={isSignOutConfirmOpen}
+        onClose={() => setIsSignOutConfirmOpen(false)}
+        onConfirm={() => {
+          onSignOut?.();
+        }}
+        title="Sign Out"
+        description="Are you sure you want to sign out of your workspace session?"
+        confirmLabel="Sign Out"
+        cancelLabel="Cancel"
+        isDestructive={true}
+      />
     </header>
   );
 }
