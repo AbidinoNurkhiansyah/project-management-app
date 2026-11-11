@@ -1,8 +1,20 @@
 "use client";
 
 import React from "react";
-import { CanvasBoard } from "@/components/canvas/CanvasBoard";
+import dynamic from "next/dynamic";
 import { useCanvas } from "@/hooks/useCanvas";
+
+const CanvasBoard = dynamic(
+  () => import("@/components/canvas/CanvasBoard").then((mod) => mod.CanvasBoard),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+        Loading canvas whiteboard...
+      </div>
+    ),
+  }
+);
 
 export default function CanvasPage({ params }: { params: { projectId: string } }) {
   const { canvasData, loading, saveStatus, saveCanvas } = useCanvas(params.projectId);
