@@ -13,8 +13,9 @@ import {
 } from "firebase/firestore";
 import { getFirebaseFirestore } from "@/lib/firebase/client";
 import { useAuth } from "@/context/AuthContext";
-import { TaskDoc } from "@/types/tasks";
+import { TaskDoc, Subtask, TaskColumnStatus, TaskPriority } from "@/types/tasks";
 import { TaskCreateInput, TaskUpdateInput } from "@/schemas/task.schema";
+import { deriveParentTaskStatus } from "@/lib/progress";
 
 export function useTasks(projectId: string | null) {
   const { user } = useAuth();
@@ -40,10 +41,22 @@ export function useTasks(projectId: string | null) {
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          const list: TaskDoc[] = snapshot.docs.map((docSnap) => ({
-            id: docSnap.id,
-            ...(docSnap.data() as Omit<TaskDoc, "id">),
-          }));
+          const list: TaskDoc[] = snapshot.docs.map((docSnap) => {
+            const data = docSnap.data() as Omit<TaskDoc, "id">;
+            const effectiveColumnId = deriveParentTaskStatus(data.subtasks, data.columnId);
+
+            // Auto-heal Firestore if status was out of sync
+            if (effectiveColumnId !== data.columnId) {
+              const ref = doc(db, "tasks", docSnap.id);
+              updateDoc(ref, { columnId: effectiveColumnId }).catch(() => {});
+            }
+
+            return {
+              id: docSnap.id,
+              ...data,
+              columnId: effectiveColumnId,
+            };
+          });
           list.sort((a, b) => a.order - b.order);
           setTasks(list);
           setLoading(false);
@@ -104,15 +117,35 @@ export function useTasks(projectId: string | null) {
   const moveTask = useCallback(
     async (taskId: string, columnId: string, newOrder: number) => {
       if (!user) throw new Error("Must be logged in to move a task");
+      const target = tasks.find((t) => t.id === taskId);
       const db = getFirebaseFirestore();
       const ref = doc(db, "tasks", taskId);
+
+      // If dragged to DONE, synchronize all subtasks as completed
+      // If dragged to TODO, reset all subtasks as pending
+      let updatedSubtasks = target?.subtasks;
+      if (columnId === "DONE" && updatedSubtasks && updatedSubtasks.length > 0) {
+        updatedSubtasks = updatedSubtasks.map((s) => ({
+          ...s,
+          completed: true,
+          status: "DONE",
+        }));
+      } else if (columnId === "TODO" && updatedSubtasks && updatedSubtasks.length > 0) {
+        updatedSubtasks = updatedSubtasks.map((s) => ({
+          ...s,
+          completed: false,
+          status: "TODO",
+        }));
+      }
+
       await updateDoc(ref, {
         columnId,
         order: newOrder,
+        ...(updatedSubtasks ? { subtasks: updatedSubtasks } : {}),
         updatedAt: new Date().toISOString(),
       });
     },
-    [user]
+    [user, tasks]
   );
 
   const deleteTask = useCallback(
@@ -125,6 +158,102 @@ export function useTasks(projectId: string | null) {
     [user]
   );
 
+  const addSubtask = useCallback(
+    async (
+      taskId: string,
+      input:
+        | string
+        | {
+            title: string;
+            status?: TaskColumnStatus;
+            priority?: TaskPriority;
+            dueDate?: string | null;
+          }
+    ) => {
+      if (!user) throw new Error("Must be logged in");
+      const target = tasks.find((t) => t.id === taskId);
+      if (!target) return;
+
+      const title = typeof input === "string" ? input.trim() : input.title.trim();
+      const status = typeof input === "string" ? "TODO" : input.status || "TODO";
+      const priority = typeof input === "string" ? "MEDIUM" : input.priority || "MEDIUM";
+      const dueDate = typeof input === "string" ? null : input.dueDate || null;
+
+      const currentSubtasks = target.subtasks || [];
+      const newSubtask: Subtask = {
+        id: `sub-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        title,
+        status,
+        priority,
+        dueDate,
+        completed: status === "DONE",
+        createdAt: new Date().toISOString(),
+      };
+
+      const updated = [...currentSubtasks, newSubtask];
+      const newColumnId = deriveParentTaskStatus(updated, target.columnId);
+      await updateTask(taskId, { subtasks: updated, columnId: newColumnId });
+    },
+    [user, tasks, updateTask]
+  );
+
+  const updateSubtask = useCallback(
+    async (taskId: string, subtaskId: string, updates: Partial<Subtask>) => {
+      if (!user) throw new Error("Must be logged in");
+      const target = tasks.find((t) => t.id === taskId);
+      if (!target || !target.subtasks) return;
+
+      const updated = target.subtasks.map((s) => {
+        if (s.id !== subtaskId) return s;
+        const merged = { ...s, ...updates };
+        if (updates.status !== undefined) {
+          merged.completed = updates.status === "DONE";
+        } else if (updates.completed !== undefined) {
+          merged.status = updates.completed ? "DONE" : "TODO";
+        }
+        return merged;
+      });
+
+      const newColumnId = deriveParentTaskStatus(updated, target.columnId);
+      await updateTask(taskId, { subtasks: updated, columnId: newColumnId });
+    },
+    [user, tasks, updateTask]
+  );
+
+  const toggleSubtask = useCallback(
+    async (taskId: string, subtaskId: string) => {
+      if (!user) throw new Error("Must be logged in");
+      const target = tasks.find((t) => t.id === taskId);
+      if (!target || !target.subtasks) return;
+
+      const updated = target.subtasks.map((s) => {
+        if (s.id !== subtaskId) return s;
+        const newCompleted = !s.completed;
+        return {
+          ...s,
+          completed: newCompleted,
+          status: newCompleted ? "DONE" : "TODO",
+        };
+      });
+      const newColumnId = deriveParentTaskStatus(updated, target.columnId);
+      await updateTask(taskId, { subtasks: updated, columnId: newColumnId });
+    },
+    [user, tasks, updateTask]
+  );
+
+  const removeSubtask = useCallback(
+    async (taskId: string, subtaskId: string) => {
+      if (!user) throw new Error("Must be logged in");
+      const target = tasks.find((t) => t.id === taskId);
+      if (!target || !target.subtasks) return;
+
+      const updated = target.subtasks.filter((s) => s.id !== subtaskId);
+      const newColumnId = deriveParentTaskStatus(updated, target.columnId);
+      await updateTask(taskId, { subtasks: updated, columnId: newColumnId });
+    },
+    [user, tasks, updateTask]
+  );
+
   return {
     tasks,
     loading,
@@ -133,5 +262,9 @@ export function useTasks(projectId: string | null) {
     updateTask,
     moveTask,
     deleteTask,
+    addSubtask,
+    updateSubtask,
+    toggleSubtask,
+    removeSubtask,
   };
 }
