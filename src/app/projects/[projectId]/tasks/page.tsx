@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { TaskPriority, TaskDoc, TaskColumnStatus } from "@/types/tasks";
 import {
   Plus,
@@ -22,6 +23,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { calculateTaskProgress } from "@/lib/progress";
 
 export default function TaskListPage({ params }: { params: { projectId: string } }) {
+  const router = useRouter();
   const {
     tasks,
     loading,
@@ -67,6 +69,17 @@ export default function TaskListPage({ params }: { params: { projectId: string }
   >({});
 
   const activeSelectedTask = tasks.find((t) => t.id === selectedTask?.id) || selectedTask;
+
+  // Urgent/High first, then newest first (highest order = most recently created)
+  const priorityRank: Record<string, number> = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+  const sortedTasks = [...tasks].sort((a, b) => {
+    const pa = priorityRank[a.priority] ?? 2;
+    const pb = priorityRank[b.priority] ?? 2;
+    const ga = pa <= 1 ? pa : 2;
+    const gb = pb <= 1 ? pb : 2;
+    if (ga !== gb) return ga - gb;
+    return b.order - a.order;
+  });
 
   const priorityBadgeVariant = (priority: TaskPriority) => {
     switch (priority) {
@@ -158,7 +171,7 @@ export default function TaskListPage({ params }: { params: { projectId: string }
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
       {/* Top Header */}
-      <div className="flex items-center justify-between">
+      <div className="sticky top-0 z-20 bg-surface-base/95 backdrop-blur-sm -mx-4 md:-mx-6 px-4 md:px-6 py-3 md:py-4 -mt-4 md:-mt-6 border-b border-border/40 flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-foreground">Task List</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -208,34 +221,21 @@ export default function TaskListPage({ params }: { params: { projectId: string }
           </div>
 
           {/* List of Separated Task Records */}
-          {tasks.map((task) => {
+          {sortedTasks.map((task) => {
             const subtasks = task.subtasks || [];
             const hasSubtasks = subtasks.length > 0;
-            const isExpanded = expandedTaskId === task.id;
-            const progress = calculateTaskProgress(task);
-            const draft = getDraft(task.id);
-
+                        const progress = calculateTaskProgress(task);
+            
             return (
               <div
                 key={task.id}
                 className="rounded-lg border border-border bg-surface-card hover:border-zinc-700 transition-all overflow-hidden shadow-sm"
               >
                 {/* Main Task Record Row (Aligned Columns) */}
-                <div className={`p-3 ${gridTemplate} bg-surface-card`}>
+                <div onClick={() => router.push(`/projects/${params.projectId}/tasks/${task.id}`)}
+                  className={`p-3 ${gridTemplate} bg-surface-card cursor-pointer hover:bg-surface-hover/40`}>
                   {/* Column 1: Title with Chevron */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(task.id)}
-                      className="p-0.5 rounded hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                      title={isExpanded ? "Collapse subtasks" : "Expand subtasks"}
-                    >
-                      {isExpanded ? (
-                        <ChevronDown className="w-4 h-4 text-foreground" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4" />
-                      )}
-                    </button>
                     <span className="font-semibold text-sm text-foreground truncate">
                       {task.title}
                     </span>
@@ -282,7 +282,8 @@ export default function TaskListPage({ params }: { params: { projectId: string }
                   <div className="flex items-center justify-end gap-1">
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setSelectedTask(task);
                         setIsDetailOpen(true);
                       }}
@@ -293,9 +294,10 @@ export default function TaskListPage({ params }: { params: { projectId: string }
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        setTaskToDelete({ taskId: task.id, title: task.title })
-                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTaskToDelete({ taskId: task.id, title: task.title });
+                      }}
                       className="p-1.5 rounded hover:bg-surface-elevated text-muted-foreground hover:text-rose-400 transition-colors"
                       title="Delete task"
                     >
@@ -304,212 +306,6 @@ export default function TaskListPage({ params }: { params: { projectId: string }
                   </div>
                 </div>
 
-                {/* Unified Internal Subtasks Section (Disatukan di dalam Task Record ini) */}
-                {isExpanded && (
-                  <div className="border-t border-border/60 bg-surface-layout/40 divide-y divide-border/25">
-                    {/* Subtask Rows (Aligned in the same column template) */}
-                    {subtasks.map((sub) => {
-                      const isDone = sub.status === "DONE" || sub.completed;
-                      const subStatus = sub.status || (sub.completed ? "DONE" : "TODO");
-                      const subPriority = sub.priority || "MEDIUM";
-
-                      return (
-                        <div
-                          key={sub.id}
-                          className={`px-3 py-2 ${gridTemplate} hover:bg-surface-hover/50 transition-colors text-xs`}
-                        >
-                          {/* Column 1: Subtask Title with Indent & Checkbox */}
-                          <div className="flex items-center gap-2 pl-6 min-w-0">
-                            <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
-                            <button
-                              type="button"
-                              onClick={() => toggleSubtask(task.id, sub.id)}
-                              className="text-muted-foreground hover:text-foreground shrink-0"
-                              title="Toggle complete"
-                            >
-                              {isDone ? (
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                              ) : (
-                                <Circle className="w-3.5 h-3.5 text-muted-foreground" />
-                              )}
-                            </button>
-                            <span
-                              className={
-                                isDone
-                                  ? "line-through text-muted-foreground font-mono text-[11px] truncate"
-                                  : "text-foreground font-medium text-[11px] truncate"
-                              }
-                            >
-                              {sub.title}
-                            </span>
-                          </div>
-
-                          {/* Column 2: Subtask Status Select */}
-                          <div>
-                            <select
-                              value={subStatus}
-                              onChange={(e) =>
-                                updateSubtask(task.id, sub.id, {
-                                  status: e.target.value as TaskColumnStatus,
-                                })
-                              }
-                              className="h-6 w-full rounded border border-border bg-surface-card px-1.5 text-[11px] text-foreground focus:outline-none"
-                            >
-                              <option value="TODO">To Do</option>
-                              <option value="IN_PROGRESS">In Progress</option>
-                              <option value="DONE">Done</option>
-                            </select>
-                          </div>
-
-                          {/* Column 3: Subtask Priority Select */}
-                          <div>
-                            <select
-                              value={subPriority}
-                              onChange={(e) =>
-                                updateSubtask(task.id, sub.id, {
-                                  priority: e.target.value as TaskPriority,
-                                })
-                              }
-                              className="h-6 w-full rounded border border-border bg-surface-card px-1.5 text-[11px] text-foreground focus:outline-none"
-                            >
-                              <option value="LOW">Low</option>
-                              <option value="MEDIUM">Medium</option>
-                              <option value="HIGH">High</option>
-                              <option value="URGENT">Urgent</option>
-                            </select>
-                          </div>
-
-                          {/* Column 4: Subtask Due Date */}
-                          <div>
-                            <input
-                              type="date"
-                              value={sub.dueDate ? sub.dueDate.split("T")[0] : ""}
-                              onChange={(e) =>
-                                updateSubtask(task.id, sub.id, {
-                                  dueDate: e.target.value
-                                    ? new Date(e.target.value).toISOString()
-                                    : null,
-                                })
-                              }
-                              className="h-6 w-full rounded border border-border bg-surface-card px-1.5 text-[10px] text-foreground font-mono focus:outline-none"
-                            />
-                          </div>
-
-                          {/* Column 5: Subtask Status Indicator */}
-                          <div className="font-mono text-[10px] text-muted-foreground">
-                            {isDone ? (
-                              <span className="text-emerald-400 font-semibold">Done</span>
-                            ) : (
-                              <span>Pending</span>
-                            )}
-                          </div>
-
-                          {/* Column 6: Subtask Delete Action */}
-                          <div className="flex items-center justify-end">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setSubtaskToDelete({
-                                  taskId: task.id,
-                                  subtaskId: sub.id,
-                                  title: sub.title,
-                                })
-                              }
-                              className="p-1 rounded text-muted-foreground hover:text-rose-400 hover:bg-surface-elevated transition-colors"
-                              title="Delete subtask"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Inline Add Subtask Row (Aligned to the same columns) */}
-                    <form
-                      onSubmit={(e) => handleInlineAddSubtask(task.id, e)}
-                      className={`px-3 py-2 ${gridTemplate} bg-surface-elevated/20 text-xs`}
-                    >
-                      {/* Column 1: Title input */}
-                      <div className="flex items-center gap-2 pl-6 min-w-0">
-                        <Plus className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <input
-                          type="text"
-                          value={draft.title}
-                          onChange={(e) =>
-                            updateDraft(task.id, { title: e.target.value })
-                          }
-                          placeholder="+ Add subtask title..."
-                          className="h-6 flex-1 bg-surface-card px-2 rounded text-xs border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border-hover min-w-0"
-                        />
-                      </div>
-
-                      {/* Column 2: Status select */}
-                      <div>
-                        <select
-                          value={draft.status}
-                          onChange={(e) =>
-                            updateDraft(task.id, {
-                              status: e.target.value as TaskColumnStatus,
-                            })
-                          }
-                          className="h-6 w-full rounded border border-border bg-surface-card px-1.5 text-[11px] text-foreground focus:outline-none"
-                        >
-                          <option value="TODO">To Do</option>
-                          <option value="IN_PROGRESS">In Progress</option>
-                          <option value="DONE">Done</option>
-                        </select>
-                      </div>
-
-                      {/* Column 3: Priority select */}
-                      <div>
-                        <select
-                          value={draft.priority}
-                          onChange={(e) =>
-                            updateDraft(task.id, {
-                              priority: e.target.value as TaskPriority,
-                            })
-                          }
-                          className="h-6 w-full rounded border border-border bg-surface-card px-1.5 text-[11px] text-foreground focus:outline-none"
-                        >
-                          <option value="LOW">Low</option>
-                          <option value="MEDIUM">Medium</option>
-                          <option value="HIGH">High</option>
-                          <option value="URGENT">Urgent</option>
-                        </select>
-                      </div>
-
-                      {/* Column 4: Due date input */}
-                      <div>
-                        <input
-                          type="date"
-                          value={draft.dueDate}
-                          onChange={(e) =>
-                            updateDraft(task.id, { dueDate: e.target.value })
-                          }
-                          className="h-6 w-full rounded border border-border bg-surface-card px-1.5 text-[10px] text-foreground font-mono focus:outline-none"
-                        />
-                      </div>
-
-                      {/* Column 5: Draft status preview */}
-                      <div className="font-mono text-[10px] text-muted-foreground">
-                        Draft
-                      </div>
-
-                      {/* Column 6: Add Button */}
-                      <div className="flex items-center justify-end">
-                        <Button
-                          type="submit"
-                          size="sm"
-                          disabled={!draft.title.trim()}
-                          className="h-6 px-2.5 text-[10px] font-mono shrink-0"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    </form>
-                  </div>
-                )}
               </div>
             );
           })}

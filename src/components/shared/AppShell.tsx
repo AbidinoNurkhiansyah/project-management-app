@@ -64,7 +64,7 @@ export function AppShell({ children, projects = [], activeProjectId = null }: Ap
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="h-screen bg-background text-foreground flex flex-col font-sans">
       <TopNav
         projects={projects}
         activeProjectId={activeProjectId}
@@ -101,3 +101,4 @@ export function AppShell({ children, projects = [], activeProjectId = null }: Ap
     </div>
   );
 }
+
