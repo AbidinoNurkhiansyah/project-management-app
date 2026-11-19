@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { GoogleIntegrationSchema } from "@/schemas/integration.schema";
+import { GoogleIntegrationSchema } from "@/features/integrations/schemas/integration.schema";
 
 describe("GoogleIntegrationSchema", () => {
   it("validates Google integration document structure", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ProjectCreateInputSchema } from "@/schemas/project.schema";
+import { ProjectCreateInputSchema } from "@/features/projects/schemas/project.schema";
 
 describe("ProjectCreateInputSchema", () => {
   it("validates correct project creation payload", () => {

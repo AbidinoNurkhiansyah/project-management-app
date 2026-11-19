@@ -1,4 +1,4 @@
-import { BaseDocument } from "./common";
+import { BaseDocument } from "@/types/common";
 
 export interface ProjectDoc extends BaseDocument {
   name: string;

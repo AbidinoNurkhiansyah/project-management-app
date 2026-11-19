@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateCanvasPayloadSize } from "@/lib/canvas-validator";
+import { validateCanvasPayloadSize } from "@/features/canvas/utils/canvas-validator";
 
 describe("validateCanvasPayloadSize", () => {
   it("accepts canvas payloads under 800 KB ceiling", () => {

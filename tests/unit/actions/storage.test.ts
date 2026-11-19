@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { getPresignedUploadUrlAction } from "@/actions/storage.actions";
+import { getPresignedUploadUrlAction } from "@/features/integrations/actions/storage.actions";
 
-vi.mock("@/actions/auth-guard", () => ({
+vi.mock("@/lib/firebase/auth-guard", () => ({
   requireAuthUser: vi.fn().mockResolvedValue({ uid: "user-123" }),
 }));
 

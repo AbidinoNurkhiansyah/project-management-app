@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { deleteProjectCascadeAction } from "@/actions/project-cascade.actions";
+import { deleteProjectCascadeAction } from "@/features/projects/actions/project-cascade.actions";
 
-vi.mock("@/actions/auth-guard", () => ({
+vi.mock("@/lib/firebase/auth-guard", () => ({
   requireAuthUser: vi.fn().mockResolvedValue({ uid: "user-123" }),
 }));
 

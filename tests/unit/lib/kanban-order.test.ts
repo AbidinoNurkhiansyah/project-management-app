@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateFractionalOrder } from "@/lib/kanban-order";
+import { calculateFractionalOrder } from "@/features/kanban/utils/kanban-order";
 
 describe("calculateFractionalOrder", () => {
   it("calculates initial midpoint for empty list", () => {

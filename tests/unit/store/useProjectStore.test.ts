@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { useProjectStore } from "@/store/useProjectStore";
+import { useProjectStore } from "@/stores/useProjectStore";
 import { slugify } from "@/lib/slug";
 
 describe("slugify", () => {

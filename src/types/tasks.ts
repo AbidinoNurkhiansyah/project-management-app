@@ -1,4 +1,4 @@
-import { BaseDocument, FileAttachment } from "./common";
+import { BaseDocument, FileAttachment } from "@/types/common";
 
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 export type TaskColumnStatus = "TODO" | "IN_PROGRESS" | "DONE" | string;

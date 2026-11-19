@@ -3,7 +3,7 @@ import {
   calculateTaskProgress,
   calculateProjectProgress,
   deriveParentTaskStatus,
-} from "@/lib/progress";
+} from "@/features/tasks/utils/progress";
 import { TaskDoc } from "@/types/tasks";
 
 describe("Progress Calculation Engine (Hierarchical Weighted)", () => {
