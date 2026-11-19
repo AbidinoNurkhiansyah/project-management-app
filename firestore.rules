@@ -56,5 +56,13 @@ service cloud.firestore {
       allow update: if isExistingOwner() && isImmutableOwner() && request.resource.data.projectId == resource.data.projectId;
       allow delete: if isExistingOwner();
     }
+
+    // 5. Schedule Events Collection (personal or project-scoped)
+    match /schedule_events/{eventId} {
+      allow read: if isExistingOwner();
+      allow create: if hasValidOwnershipOnCreate();
+      allow update: if isExistingOwner() && isImmutableOwner();
+      allow delete: if isExistingOwner();
+    }
   }
 }

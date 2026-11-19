@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search, CheckSquare, Kanban, Palette, Settings } from "lucide-react";
+import { Search, CheckSquare, Kanban, Palette, CalendarDays, Settings } from "lucide-react";
 
 interface CommandMenuProps {
   isOpen: boolean;
@@ -26,6 +26,7 @@ export function CommandMenu({ isOpen, onClose, onNavigate }: CommandMenuProps) {
     { label: "Go to Tasks", path: "tasks", icon: CheckSquare },
     { label: "Go to Kanban Board", path: "boards", icon: Kanban },
     { label: "Go to Flowchart Canvas", path: "canvas", icon: Palette },
+    { label: "Go to Schedule", path: "schedule", icon: CalendarDays },
     { label: "Project Settings", path: "settings", icon: Settings },
   ];
 

@@ -54,6 +54,8 @@ export function AppShell({ children, projects = [], activeProjectId = null }: Ap
   const handleNavigateCommand = (path: string) => {
     if (activeProjectId) {
       router.push(`/projects/${activeProjectId}/${path}`);
+    } else if (path === "schedule") {
+      router.push("/schedule");
     } else {
       router.push("/projects");
     }

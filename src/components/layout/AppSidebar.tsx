@@ -7,6 +7,7 @@ import {
   Kanban,
   Palette,
   CheckSquare,
+  CalendarDays,
   Settings,
   ArrowLeft,
   PanelLeftClose,
@@ -70,6 +71,11 @@ export function AppSidebar({
       label: "Task List",
       href: `/projects/${projectId}/tasks`,
       icon: CheckSquare,
+    },
+    {
+      label: "Schedule",
+      href: `/projects/${projectId}/schedule`,
+      icon: CalendarDays,
     },
     {
       label: "Project Settings",

@@ -40,7 +40,11 @@ export async function deleteProjectCascadeAction(projectId: string, token: strin
   const boardsSnap = await db.collection("boards").where("projectId", "==", projectId).get();
   boardsSnap.docs.forEach((doc) => batch.delete(doc.ref));
 
-  // 4. Delete the project document
+  // 4. Batch delete all schedule events belonging to project
+  const eventsSnap = await db.collection("schedule_events").where("projectId", "==", projectId).get();
+  eventsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+
+  // 5. Delete the project document
   batch.delete(projectRef);
   await batch.commit();
 

@@ -2,12 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, LogOut, Folder } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Search, LogOut, Folder, CalendarDays } from "lucide-react";
 import { ProjectDoc } from "@/types/projects";
 import { ProjectProgressStats } from "@/features/projects/hooks/useProjectsProgress";
 import { ProjectSwitcher } from "@/features/projects/components/ProjectSwitcher";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface TopNavProps {
   projects: ProjectDoc[];
@@ -30,6 +32,7 @@ export function TopNav({
   onSignOut,
   projectProgress,
 }: TopNavProps) {
+  const pathname = usePathname() ?? "";
   const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState(false);
 
   return (
@@ -58,7 +61,32 @@ export function TopNav({
             onCreateClick={onCreateProjectClick}
           />
         ) : (
-          <span className="text-xs font-medium text-foreground">Projects</span>
+          <nav className="flex items-center gap-1" aria-label="Workspace navigation">
+            <Link
+              href="/projects"
+              className={cn(
+                "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors",
+                pathname.startsWith("/projects")
+                  ? "bg-surface-elevated text-foreground border border-border"
+                  : "text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+              )}
+            >
+              <Folder className="w-3.5 h-3.5 shrink-0" />
+              <span>Projects</span>
+            </Link>
+            <Link
+              href="/schedule"
+              className={cn(
+                "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors",
+                pathname.startsWith("/schedule")
+                  ? "bg-surface-elevated text-foreground border border-border"
+                  : "text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+              )}
+            >
+              <CalendarDays className="w-3.5 h-3.5 shrink-0" />
+              <span>Schedule</span>
+            </Link>
+          </nav>
         )}
 
         {projectProgress && activeProjectId && (
