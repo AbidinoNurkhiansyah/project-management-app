@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { UploadCloud } from "lucide-react";
 import { FileAttachment } from "@/types/common";
-import { getPresignedUploadUrlAction } from "@/actions/storage.actions";
+import { getPresignedUploadUrlAction } from "@/features/integrations/actions/storage.actions";
 import { getFirebaseAuth } from "@/lib/firebase/client";
 
 interface FileUploadZoneProps {

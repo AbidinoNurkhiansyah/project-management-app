@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { GCalConnectCard } from "@/components/integrations/GCalConnectCard";
+import { GCalConnectCard } from "@/features/integrations";
 
 describe("GCalConnectCard", () => {
   it("renders connect button when not connected", () => {

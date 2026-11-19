@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Search, LogOut, Folder } from "lucide-react";
 import { ProjectDoc } from "@/types/projects";
-import { ProjectProgressStats } from "@/hooks/useProjectsProgress";
-import { ProjectSwitcher } from "./ProjectSwitcher";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { ProjectProgressStats } from "@/features/projects/hooks/useProjectsProgress";
+import { ProjectSwitcher } from "@/features/projects/components/ProjectSwitcher";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 
 interface TopNavProps {

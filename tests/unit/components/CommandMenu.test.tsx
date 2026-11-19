@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { CommandMenu } from "@/components/shared/CommandMenu";
+import { CommandMenu } from "@/components/layout/CommandMenu";
 
 describe("CommandMenu", () => {
   it("renders command palette items when open", () => {

@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { TopNav } from "./TopNav";
 import { AppSidebar } from "./AppSidebar";
 import { CommandMenu } from "./CommandMenu";
-import { ProjectCreateDialog } from "./ProjectCreateDialog";
+import { ProjectCreateDialog } from "@/features/projects/components/ProjectCreateDialog";
 import { ProjectDoc } from "@/types/projects";
-import { useProjectStore } from "@/store/useProjectStore";
-import { useAuth } from "@/context/AuthContext";
-import { useProjectsProgress } from "@/hooks/useProjectsProgress";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useAuth } from "@/features/auth";
+import { useProjects } from "@/features/projects/hooks/useProjects";
+import { useProjectsProgress } from "@/features/projects/hooks/useProjectsProgress";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ interface AppShellProps {
 export function AppShell({ children, projects = [], activeProjectId = null }: AppShellProps) {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { createProject } = useProjects();
   const { setActiveProjectId } = useProjectStore();
   const { getProgress } = useProjectsProgress();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
@@ -58,9 +60,14 @@ export function AppShell({ children, projects = [], activeProjectId = null }: Ap
   };
 
   const handleCreateProject = async (payload: { name: string; description?: string | null; color: string }) => {
-    // In actual usage, creates in Firestore or via Server Action
-    const mockId = `proj-${Date.now()}`;
-    router.push(`/projects/${mockId}/boards`);
+    const newId = await createProject({
+      name: payload.name,
+      description: payload.description || null,
+      color: payload.color,
+    });
+    if (newId) {
+      router.push(`/projects/${newId}/boards`);
+    }
   };
 
   return (
