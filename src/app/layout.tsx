@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider } from "@/features/auth";
 import "./globals.css";
 
 const inter = Inter({

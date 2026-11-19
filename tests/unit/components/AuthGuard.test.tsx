@@ -1,8 +1,8 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { AuthGuard } from "@/components/shared/AuthGuard";
-import * as AuthContextModule from "@/context/AuthContext";
+import { AuthGuard } from "@/features/auth";
+import * as AuthContextModule from "@/features/auth/context/AuthContext";
 
 const mockReplace = vi.fn();
 

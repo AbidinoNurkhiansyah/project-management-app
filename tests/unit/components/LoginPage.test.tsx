@@ -1,8 +1,8 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import LoginPage from "@/app/login/page";
-import * as AuthContextModule from "@/context/AuthContext";
+import LoginPage from "@/app/(auth)/login/page";
+import * as AuthContextModule from "@/features/auth/context/AuthContext";
 
 const mockReplace = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -35,9 +35,9 @@ describe("LoginPage", () => {
   it("renders sign in header, google button and email input", () => {
     render(<LoginPage />);
 
-    expect(screen.getByText("Sign in to Workspace")).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Sign in" })).toBeDefined();
     expect(screen.getByText("Continue with Google")).toBeDefined();
-    expect(screen.getByLabelText("Email address")).toBeDefined();
+    expect(screen.getByLabelText("Email")).toBeDefined();
     expect(screen.getByLabelText("Password")).toBeDefined();
   });
 
@@ -47,8 +47,25 @@ describe("LoginPage", () => {
     const switchBtn = screen.getByText("Create one");
     fireEvent.click(switchBtn);
 
-    expect(screen.getByText("Create Workspace Account")).toBeDefined();
-    expect(screen.getByRole("button", { name: "Create Account" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Create account" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Create account" })).toBeDefined();
+  });
+
+  it("shows validation error for invalid credentials before calling auth", async () => {
+    render(<LoginPage />);
+
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "invalid-email" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "123" },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    });
+
+    expect(screen.getByRole("alert")).toBeDefined();
+    expect(mockSignInWithEmail).not.toHaveBeenCalled();
   });
 
   it("triggers Google sign-in when Google button is clicked", async () => {

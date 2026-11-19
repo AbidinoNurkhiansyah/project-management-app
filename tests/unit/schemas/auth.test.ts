@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UserProfileSchema } from "@/schemas/auth.schema";
+import { UserProfileSchema } from "@/features/auth/schemas/auth.schema";
 
 describe("UserProfileSchema", () => {
   it("validates correct user profile", () => {
