@@ -1,0 +1,12 @@
+export { CanvasView } from "./components/CanvasView";
+export { CanvasBoard } from "./components/CanvasBoard";
+export { CanvasToolbar } from "./components/CanvasToolbar";
+export type { CanvasNodeType } from "./components/CanvasToolbar";
+export { TaskNode } from "./components/TaskNode";
+export { NoteNode } from "./components/NoteNode";
+export { DecisionNode } from "./components/DecisionNode";
+export { GroupNode } from "./components/GroupNode";
+export { TextNode } from "./components/TextNode";
+export { ShapeNode } from "./components/ShapeNode";
+export type { FlowchartShape } from "./components/ShapeNode";
+export { useCanvas } from "./hooks/useCanvas";

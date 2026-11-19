@@ -1,7 +1,11 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { TaskCard } from "@/components/kanban/TaskCard";
+import { TaskCard } from "@/features/kanban";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 vi.mock("@dnd-kit/sortable", () => ({
   useSortable: () => ({

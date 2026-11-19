@@ -1,8 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { TaskCardHeader } from "@/components/kanban/TaskCardHeader";
-import { TaskCardMeta } from "@/components/kanban/TaskCardMeta";
+import { TaskCardHeader, TaskCardMeta } from "@/features/kanban";
 
 describe("TaskCardHeader", () => {
   it("renders title and priority badge", () => {

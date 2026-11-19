@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
-import ProjectSettingsPage from "@/app/projects/[projectId]/settings/page";
+import ProjectSettingsPage from "@/app/(dashboard)/projects/[projectId]/settings/page";
 
 const mockDeleteProject = vi.fn().mockResolvedValue(undefined);
 const mockPush = vi.fn();
@@ -11,7 +11,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("@/hooks/useProjects", () => ({
+vi.mock("@/features/projects/hooks/useProjects", () => ({
   useProjects: () => ({
     deleteProject: mockDeleteProject,
   }),
