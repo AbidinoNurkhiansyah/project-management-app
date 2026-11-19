@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const redirectBase = `/projects/${state.projectId}/settings`;
+  const redirectBase =
+    state.returnTo ||
+    (state.projectId ? `/projects/${state.projectId}/settings` : "/schedule");
 
   if (oauthError) {
     return NextResponse.redirect(

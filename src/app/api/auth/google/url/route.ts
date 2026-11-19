@@ -9,13 +9,14 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const parsed = GoogleOAuthStartSchema.safeParse({
-    projectId: searchParams.get("projectId") ?? "",
+    projectId: searchParams.get("projectId") || undefined,
+    returnTo: searchParams.get("returnTo") || undefined,
     userId: searchParams.get("userId") ?? "",
   });
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Missing or invalid projectId/userId" },
+      { error: "Missing or invalid Google OAuth parameters" },
       { status: 400 }
     );
   }

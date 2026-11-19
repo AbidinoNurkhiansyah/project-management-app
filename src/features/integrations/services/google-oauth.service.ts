@@ -21,7 +21,8 @@ function getSigningSecret(): string {
 
 export function signOAuthState(input: GoogleOAuthStartInput): string {
   const payload: GoogleOAuthStatePayload = {
-    projectId: input.projectId,
+    ...(input.projectId ? { projectId: input.projectId } : {}),
+    ...(input.returnTo ? { returnTo: input.returnTo } : {}),
     userId: input.userId,
     exp: Date.now() + STATE_TTL_MS,
   };
