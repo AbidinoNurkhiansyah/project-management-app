@@ -1,26 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGoogleOAuth2Client } from "@/lib/google/calendar";
+import {
+  GoogleOAuthStartSchema,
+  buildGoogleConsentUrl,
+} from "@/features/integrations/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const parsed = GoogleOAuthStartSchema.safeParse({
+    projectId: searchParams.get("projectId") ?? "",
+    userId: searchParams.get("userId") ?? "",
+  });
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Missing or invalid projectId/userId" },
+      { status: 400 }
+    );
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const projectId = searchParams.get("projectId") || "default";
-    const userId = searchParams.get("userId") || "user-1";
-
-    const statePayload = Buffer.from(
-      JSON.stringify({ projectId, userId })
-    ).toString("base64url");
-
-    const oauth2Client = getGoogleOAuth2Client();
-    const authUrl = oauth2Client.generateAuthUrl({
-      access_type: "offline",
-      prompt: "consent",
-      scope: ["https://www.googleapis.com/auth/calendar.events"],
-      state: statePayload,
-    });
-
+    const authUrl = buildGoogleConsentUrl(parsed.data);
     return NextResponse.redirect(authUrl);
   } catch (error) {
     console.error("Failed to generate Google OAuth URL:", error);
